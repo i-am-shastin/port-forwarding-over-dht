@@ -1,0 +1,29 @@
+{
+    "ts-node": {
+        "files": true,
+        "require": ["tsconfig-paths/register"]
+    },
+    "compilerOptions": {
+        "outDir": "dist",
+        "lib": [
+            "es2023"
+        ],
+        "module": "node16",
+        "target": "es2022",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "moduleResolution": "node16",
+        "checkJs": true,
+        "baseUrl": ".",
+        "paths": {
+            "@src/*": ["src/*"],
+            "@utils/*": ["src/utils/*"],
+            "@services/*": ["src/services/*"]
+        }
+    },
+    "include": [
+        "src/**/*",
+        "src/*"
+    ]
+}

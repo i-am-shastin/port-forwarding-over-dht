@@ -1,0 +1,38 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "definitions": {
+        "node": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": ["client", "server"]
+                },
+                "protocol": {
+                    "type": "string",
+                    "enum": ["tcp", "udp"]
+                },
+                "port": {
+                    "type": "integer"
+                },
+                "host": {
+                    "type": "string"
+                }
+            },
+            "required": ["type", "protocol", "port"]
+        }
+    },
+    "properties": {
+        "secret": {
+            "type": "string"
+        },
+        "nodes": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+                "$ref": "#/definitions/node"
+            }
+        }
+    },
+    "required": ["secret", "nodes"]
+}

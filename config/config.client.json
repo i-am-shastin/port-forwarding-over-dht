@@ -1,0 +1,21 @@
+{
+    "$schema": "./config.schema.json",
+    "secret": "WORMS_WORLD_PARTY",
+    "nodes": [
+        {
+            "type": "client",
+            "protocol": "tcp",
+            "port": 17011
+        },
+        {
+            "type": "client",
+            "protocol": "udp",
+            "port": 17010
+        },
+        {
+            "type": "client",
+            "protocol": "udp",
+            "port": 17012
+        }
+    ]
+}
