@@ -1,29 +1,23 @@
 {
-    "ts-node": {
-        "files": true,
-        "require": ["tsconfig-paths/register"]
-    },
     "compilerOptions": {
-        "outDir": "dist",
-        "lib": [
-            "es2023"
-        ],
+        "outDir": "build",
         "module": "node16",
-        "target": "es2022",
+        "target": "es2020",
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
         "moduleResolution": "node16",
+        "resolveJsonModule": true,
+        "experimentalDecorators": true,
         "checkJs": true,
         "baseUrl": ".",
         "paths": {
-            "@src/*": ["src/*"],
-            "@utils/*": ["src/utils/*"],
-            "@services/*": ["src/services/*"]
+            "~enums": ["src/enums"],
+            "~types": ["src/types"],
+            "~utils/*": ["src/utils/*"],
+            "~services/*": ["src/services/*"],
+            "~src/*": ["src/*"]
         }
     },
-    "include": [
-        "src/**/*",
-        "src/*"
-    ]
+    "include": ["src/**/*"]
 }
