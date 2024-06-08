@@ -4,10 +4,6 @@
         "node": {
             "type": "object",
             "properties": {
-                "type": {
-                    "type": "string",
-                    "enum": ["client", "server"]
-                },
                 "protocol": {
                     "type": "string",
                     "enum": ["tcp", "udp"]
@@ -19,7 +15,7 @@
                     "type": "string"
                 }
             },
-            "required": ["type", "protocol", "port"]
+            "required": ["protocol", "port"]
         }
     },
     "properties": {
