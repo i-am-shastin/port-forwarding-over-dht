@@ -5,7 +5,7 @@ import { ZodError } from 'zod';
 import { ProgramOptions } from '~types';
 
 
-export class Console {
+export abstract class Console {
     static readonly PROGRAM_OPTIONS: ProgramOptions = commander.opts();
 
     @normalize
