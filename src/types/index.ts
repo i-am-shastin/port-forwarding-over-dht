@@ -1,6 +1,6 @@
 import { z as zod } from 'zod';
 
-import { ProtocolType } from '~enums';
+import { ProgramMode, ProtocolType } from '~enums';
 
 
 export type Node = zod.infer<typeof NodeSchema>;
@@ -13,9 +13,10 @@ export const NodeSchema = zod.object({
 export type Configuration = zod.infer<typeof ConfigurationSchema>;
 export const ConfigurationSchema = zod
     .object({
-        secret: zod.string().trim().min(1),
+        secret: zod.string().trim().min(8),
         nodes: NodeSchema.array(),
-        server: zod.boolean()
+        server: zod.boolean(),
+        easy: zod.boolean()
     })
     .superRefine(({ server, nodes }, context) => {
         if (server && !nodes.length) {
@@ -29,12 +30,6 @@ export const ConfigurationSchema = zod
         }
     });
 
-export type Process = zod.infer<typeof ProcessSchema>;
-export const ProcessSchema = zod.object({
-    name: zod.string(),
-    nodes: NodeSchema.array()
-});
-
 export type ProgramOptions = zod.infer<typeof ProgramOptionsSchema>;
 export const ProgramOptionsSchema = zod
     .object({
@@ -47,3 +42,13 @@ export const ProgramOptionsSchema = zod
         generate: zod.boolean()
     })
     .partial();
+
+export type Answers = {
+    mode: ProgramMode;
+    secret: string;
+    knownNodes: boolean;
+    nodes?: string[];
+    process?: string;
+    save: boolean;
+    easy?: boolean;
+};
