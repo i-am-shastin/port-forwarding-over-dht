@@ -1,18 +1,35 @@
-import DHT from 'hyperdht';
-import { ConfigReader } from '@src/utils';
-import { Keychain } from '@services/keychain';
-import { NodeFactory } from '@services/node';
+import { program } from 'commander';
+
+import packageData from '../package.json';
+
+import { ConfigurationBuilder } from '~services/config/builder';
+import { NodeFactory } from '~services/node/factory';
+import { ProgramOptions } from '~types';
+import { Console } from '~utils/console';
+import { writeConfiguration } from '~utils/file';
 
 
-(async () => {
-    const config = await ConfigReader.get(process.argv[2] as unknown as NodeType);
+program
+    .name(packageData.name)
+    .version(packageData.version)
+    .argument('[secret]', 'secret phrase used to connect between server and client')
+    .option('-g, --generate', 'use randomly generated secret')
+    .option('-c, --config <filename>', 'use configuration from file')
+    .option('-n, --nodes <[host-]tcp|udp:number>', 'comma-separated list of [host-]protocol:port', (v) => v.split(','))
+    .option('-s, --server', 'start in server mode, otherwise client mode will be used')
+    .option('-e, --easy', 'server will send config to client so client doesn\'t need to provide anything but secret')
+    .option('-o, --output <filename>', 'save resulting configuration to file')
+    .option('-d, --debug', 'more verbose output')
+    .action(main)
+    .parse();
 
-    const dht = new DHT();
-    await dht.ready();
+async function main(secret: string, options: ProgramOptions) {
+    Console.debug(`Starting ${packageData.name} v${packageData.version}`);
 
-    const keychain = new Keychain(config.secret);
-    config.nodes.map(async (n) => {
-        const node = NodeFactory.create(n);
-        await node.init(dht, keychain);
-    });
-})();
+    const config = await new ConfigurationBuilder(secret, options).build();
+    if (options.output) {
+        await writeConfiguration(options.output, config);
+    }
+
+    await new NodeFactory(config).run();
+}
