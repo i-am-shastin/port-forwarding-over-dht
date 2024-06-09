@@ -7,63 +7,44 @@ declare module 'hyperdht' {
     }
 
     interface DHTNodeOptions {
-        host?: string;
-        port?: number;
-        bootstrap?: string[];
+        host: string;
+        port: number;
+        bootstrap: string[];
 
-        keyPair?: KeyPair;
-        seed?: string;
+        keyPair: KeyPair;
+        seed: string;
 
-        connectionKeepAlive?: number;
-    }
-
-    interface DHTServerOptions {
-
-    }
-
-    interface DHTServer {
-        async listen(keyPair: KeyPair): Promise<DHTServer>;
+        connectionKeepAlive: number;
     }
 
     interface DHTConnectionOptions {
         reusableSocket?: boolean;
     }
 
+    interface DHTServerOptions extends DHTConnectionOptions {
+        firewall: (remotePublicKey, remoteHandshakePayload) => boolean;
+    }
+
+    interface DHTServer {
+        listen(keyPair: KeyPair): Promise<DHTServer>;
+    }
+
+    interface UDXStream extends NodeJS.ReadWriteStream {
+        send: (buffer: Buffer) => Promise<void>;
+    }
+
+    interface NoiseSecretStream extends NodeJS.ReadWriteStream {
+        rawStream: UDXStream;
+    }
+
     export default class DHT {
-        constructor(options: DHTNodeOptions = {});
+        constructor(options: Partial<DHTNodeOptions> = {});
+
+        ready(): Promise<void>;
+        createServer(options: Partial<DHTServerOptions>, onconnection: (stream: NoiseSecretStream) => void): DHTServer;
+        connect(remotePublicKey: Key, options?: DHTConnectionOptions): NoiseSecretStream;
 
         static keyPair(seed: Key): KeyPair;
         static hash(seed: Buffer): Key;
-
-        createServer(options: DHTServerOptions, onconnection: (stream: NoiseSecretStream) => void): DHTServer;
-        ready(): Promise<void>;
-        connect(remotePublicKey: Key, options?: DHTConnectionOptions): NodeJS.Socket;
-        // remoteAddress(): { host: string, port: number };
     }
-}
-
-interface NoiseSecretStream extends NodeJS.ReadWriteStream {
-    rawStream: NodeJS.ReadWriteStream;
-}
-
-const enum NodeType {
-    server = 'server',
-    client = 'client'
-}
-
-const enum NodeProtocol {
-    TCP = 'tcp',
-    UDP = 'udp'
-}
-
-interface NodeConfig {
-    type: NodeType;
-    protocol: NodeProtocol;
-    port: number;
-    host?: string;
-}
-
-interface Config {
-    secret: string;
-    nodes: NodeConfig[];
 }
