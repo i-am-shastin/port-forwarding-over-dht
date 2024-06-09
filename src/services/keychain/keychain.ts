@@ -1,4 +1,4 @@
-import DHT, { KeyPair } from 'hyperdht';
+import DHT, { Key, KeyPair } from 'hyperdht';
 
 import { Node } from '~types';
 import { Console } from '~utils/console';
@@ -9,8 +9,15 @@ import { Console } from '~utils/console';
  * @param secret Secret phrase which will be used as base for keypairs.
  */
 export class Keychain {
+    private readonly _baseKeyPair: KeyPair;
+
+    get baseKeyPair() {
+        return this._baseKeyPair;
+    }
+
     constructor(private secret: string) {
         Console.debug(`Initializing keychain with secret: ${secret}`);
+        this._baseKeyPair = this.keyPair(this.secret);
     }
 
     /**
@@ -20,8 +27,15 @@ export class Keychain {
         const nodeAsString = `${node.host ?? 'localhost'}-${node.protocol}:${node.port}`;
         Console.debug(`Generating keypair for node: ${nodeAsString}`);
 
-        const seed = `${this.secret}-${nodeAsString}`;
-        const hash = DHT.hash(Buffer.from(seed));
+        return this.keyPair(`${this.secret}-${nodeAsString}`);
+    }
+
+    private keyPair(input: string): KeyPair {
+        const hash = this.hash(input);
         return DHT.keyPair(hash);
+    }
+
+    private hash(input: string): Key {
+        return DHT.hash(Buffer.from(input));
     }
 }
