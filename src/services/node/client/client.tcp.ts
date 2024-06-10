@@ -18,7 +18,10 @@ export class TCPClient extends NodeInstance {
             });
         });
 
-        server.listen(this.config.port, this.config.host);
-        Console.debug(`Listening for local TCP connections on port ${this.config.port}`);
+        server.listen({ port: this.config.port, host: this.config.host }, () => {
+            Console.debug(`Listening for local TCP connections on port ${this.config.port}`);
+        });
+
+        return Promise.resolve();
     }
 }

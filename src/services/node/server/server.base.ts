@@ -10,15 +10,10 @@ export abstract class BaseServer extends NodeInstance {
 
     public async init(dht: DHT, keychain: Keychain) {
         const protocol = this.config.protocol.toString().toUpperCase();
-        const server = dht.createServer(
-            {
-                reusableSocket: this.reusableSocket
-            },
-            (stream) => {
-                Console.info(`Incoming ${protocol} connection on port ${this.config.port}`);
-                this.createConnection(stream);
-            }
-        );
+        const server = dht.createServer({ reusableSocket: this.reusableSocket }, (stream) => {
+            Console.info(`New remote ${protocol} connection on port ${this.config.port}`);
+            this.createConnection(stream);
+        });
 
         const keyPair = keychain.get(this.config);
         await server.listen(keyPair);
