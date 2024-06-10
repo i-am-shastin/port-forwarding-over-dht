@@ -49,6 +49,9 @@ export type Answers = {
     knownNodes: boolean;
     nodes?: string[];
     process?: string;
-    save: boolean;
     easy?: boolean;
+    save: boolean;
+    output?: string;
 };
+
+export type ConfigurationBuilderResult = [Configuration, string | undefined];

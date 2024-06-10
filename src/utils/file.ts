@@ -9,12 +9,16 @@ import { pick } from '~utils/types';
 export async function readConfiguration(filename: string) {
     Console.message(`Reading configuration from ${resolve(filename)}`);
     const file = await readFile(filename, 'utf8');
-    return pick(JSON.parse(file) as Configuration, 'nodes', 'secret');
+    return trimConfigurationObject(JSON.parse(file) as Configuration);
 }
 
 export async function writeConfiguration(filename: string, configuration: Configuration) {
-    const jsonConfig = pick(configuration, 'nodes', 'secret');
+    const jsonConfig = trimConfigurationObject(configuration);
     const output = JSON.stringify(jsonConfig, null, 4);
     await writeFile(filename, output, 'utf8');
     Console.message(`Configuration saved to ${resolve(filename)}`);
+}
+
+function trimConfigurationObject(obj: Configuration) {
+    return pick(obj, 'nodes', 'secret', 'easy');
 }

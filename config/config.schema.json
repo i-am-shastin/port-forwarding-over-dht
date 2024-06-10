@@ -28,6 +28,9 @@
             "items": {
                 "$ref": "#/definitions/node"
             }
+        },
+        "easy": {
+            "type": "boolean"
         }
     },
     "required": ["secret", "nodes"]
