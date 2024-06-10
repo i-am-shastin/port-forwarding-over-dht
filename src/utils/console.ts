@@ -8,18 +8,15 @@ import { ProgramOptions } from '~types';
 export abstract class Console {
     static readonly PROGRAM_OPTIONS: ProgramOptions = commander.opts();
 
-    @normalize
-    static message(message: string | ZodError) {
+    static message(message: string) {
         console.log(chalk.bold(message));
     }
 
-    @normalize
-    static info(message: string | ZodError) {
+    static info(message: string) {
         console.log(chalk.greenBright(message));
     }
 
-    @normalize
-    static debug(message: string | ZodError) {
+    static debug(message: string) {
         this.PROGRAM_OPTIONS.debug && console.log(chalk.italic.gray(`~ ${message}`));
     }
 
@@ -35,7 +32,7 @@ export abstract class Console {
 }
 
 function normalize(_target: object, _key: PropertyKey, descriptor: PropertyDescriptor) {
-    const originalMethod = descriptor.value;
+    const originalMethod = descriptor.value as (message: string | ZodError) => void;
     descriptor.value = function (message: string | ZodError) {
         if (message instanceof ZodError) {
             message = message.errors
