@@ -1,5 +1,5 @@
 import { ProgramMode } from '~enums';
-import { Answers, Configuration, Node } from '~types';
+import { Answers, Configuration, ConfigurationBuilderResult, Node } from '~types';
 import { Console } from '~utils/console';
 import { generateSecret } from '~utils/crypto';
 import { parseNodes } from '~utils/parser';
@@ -8,10 +8,10 @@ import { getProcessNetworkInfo } from '~utils/process';
 
 export class PromptConfigurationBuilder {
     constructor() {
-        Console.debug('Running interactive configuration builder');
+        Console.debug('Starting prompt configuration builder');
     }
 
-    async run(): Promise<Configuration> {
+    async run(): Promise<ConfigurationBuilderResult> {
         const { default: inquirer } = await import('inquirer');
         const processInfo = await getProcessNetworkInfo();
         const processNames = Object.keys(processInfo).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
@@ -58,12 +58,21 @@ export class PromptConfigurationBuilder {
                 }
             },
             {
+                name: 'easy',
+                type: 'confirm',
+                message: 'Start server in easy mode? (node configuration will be automatically sent to client)',
+                when: (answers: Answers) => answers.mode === ProgramMode.Server
+            },
+            {
                 name: 'save',
                 type: 'confirm',
                 message: 'Do you want to save configuration?',
-                when: (answers: Answers) => {
-                    return answers.nodes && answers.nodes.length > 0;
-                }
+                when: (answers: Answers) => (answers.nodes && answers.nodes.length > 0) || answers.process
+            },
+            {
+                name: 'output',
+                message: 'Enter filename:',
+                when: (answers: Answers) => answers.save
             }
         ]);
 
@@ -75,11 +84,13 @@ export class PromptConfigurationBuilder {
             nodes = processInfo[result.process];
         }
 
-        return {
+        const configuration: Configuration = {
             nodes,
             secret: result.secret,
             server: result.mode === ProgramMode.Server,
             easy: result.mode === ProgramMode.Server && result.easy === true
         };
+
+        return [configuration, result.output];
     }
 }

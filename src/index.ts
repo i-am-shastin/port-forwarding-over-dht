@@ -26,9 +26,9 @@ program
 async function main(secret: string, options: ProgramOptions) {
     Console.debug(`Starting ${packageData.name} v${packageData.version}`);
 
-    const config = await new ConfigurationBuilder(secret, options).build();
-    if (options.output) {
-        await writeConfiguration(options.output, config);
+    const [config, output] = await new ConfigurationBuilder(secret, options).build();
+    if (output) {
+        await writeConfiguration(output, config);
     }
 
     await new NodeFactory(config).run();

@@ -1,5 +1,5 @@
 import { PromptConfigurationBuilder } from '~services/config/prompt';
-import { Configuration, ConfigurationSchema, ProgramOptions } from '~types';
+import { Configuration, ConfigurationBuilderResult, ConfigurationSchema, ProgramOptions } from '~types';
 import { Console } from '~utils/console';
 import { generateSecret } from '~utils/crypto';
 import { readConfiguration } from '~utils/file';
@@ -7,22 +7,24 @@ import { parseNodes } from '~utils/parser';
 
 
 export class ConfigurationBuilder {
-    private get isInteractive(): boolean {
+    private get isPromptMode(): boolean {
         const optionsCount = Object.keys(this.options).length;
         return Boolean(!this.secret && (optionsCount === 0 || (optionsCount === 1 && this.options.debug)));
     }
 
+    /**
+     * @param secret Secret phrase provided as an CLI argument.
+     * @param options An array of CLI options.
+     */
     constructor(private secret: string, private options: ProgramOptions) {
         Console.debug(`Initializing configuration builder. Command line is ${process.argv.join(' ')}`);
     }
 
     /**
-     * Builds configuration from command-line arguments and/or user input.
-     * @param secret Secret phrase provided as an CLI argument.
-     * @param options An array of CLI options.
+     * Builds configuration from command-line arguments or user input.
      */
-    async build(): Promise<Configuration> {
-        const configuration = await this.getConfiguration();
+    async build(): Promise<ConfigurationBuilderResult> {
+        const [configuration, output] = await this.getConfiguration();
 
         const result = ConfigurationSchema.safeParse(configuration);
         if (!result.success) {
@@ -31,19 +33,20 @@ export class ConfigurationBuilder {
         }
 
         Console.debug(`Using configuration:\n${JSON.stringify(result.data, null, 4)}`);
-        return result.data;
+        return [result.data, output];
     }
 
-    private async getConfiguration(): Promise<Configuration> {
-        if (this.isInteractive) {
+    private async getConfiguration(): Promise<ConfigurationBuilderResult> {
+        if (this.isPromptMode) {
             return await new PromptConfigurationBuilder().run();
         }
 
         Console.debug('Parsing CLI arguments to configuration');
-        const configuration = {
+        const configuration: Configuration = {
             secret: this.secret,
             nodes: this.options.nodes ? parseNodes(this.options.nodes) : [],
-            server: this.options.server || false
+            server: this.options.server || false,
+            easy: this.options.easy || false
         };
 
         if (this.options.config) {
@@ -58,6 +61,6 @@ export class ConfigurationBuilder {
             Console.info(`Using randomly generated secret: ${configuration.secret}`);
         }
 
-        return configuration;
+        return [configuration, this.options.output];
     }
 }
