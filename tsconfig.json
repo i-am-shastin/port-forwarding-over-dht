@@ -1,12 +1,12 @@
 {
     "compilerOptions": {
         "outDir": "build",
-        "module": "node16",
-        "target": "es2020",
+        "module": "ESNext",
+        "target": "ES2020",
         "strict": true,
         "esModuleInterop": true,
         "skipLibCheck": true,
-        "moduleResolution": "node16",
+        "moduleResolution": "Bundler",
         "resolveJsonModule": true,
         "experimentalDecorators": true,
         "checkJs": true,
@@ -16,7 +16,8 @@
             "~types": ["src/types"],
             "~utils/*": ["src/utils/*"],
             "~services/*": ["src/services/*"],
-            "~src/*": ["src/*"]
+            "~src/*": ["src/*"],
+            "~package": ["package.json"]
         }
     },
     "include": ["src/**/*", "*.mjs"]
