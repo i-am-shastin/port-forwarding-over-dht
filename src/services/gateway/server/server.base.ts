@@ -1,11 +1,11 @@
 import DHT, { NoiseSecretStream } from 'hyperdht';
 
+import { GatewayInstance } from '~services/gateway/instance';
 import { Keychain } from '~services/keychain';
-import { NodeInstance } from '~services/node/instance';
 import { Console } from '~utils/console';
 
 
-export abstract class BaseServer extends NodeInstance {
+export abstract class BaseServer extends GatewayInstance {
     protected abstract reusableSocket: boolean;
 
     public async init(dht: DHT, keychain: Keychain) {

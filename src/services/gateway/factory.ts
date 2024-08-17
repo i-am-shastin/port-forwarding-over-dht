@@ -1,10 +1,10 @@
 import DHT from 'hyperdht';
 
 import { ProtocolType } from '~enums';
+import { TCPClient, UDPClient } from '~services/gateway/client';
+import { GatewayInstance } from '~services/gateway/instance';
+import { TCPServer, UDPServer } from '~services/gateway/server';
 import { Keychain } from '~services/keychain';
-import { TCPClient, UDPClient } from '~services/node/client';
-import { NodeInstance } from '~services/node/instance';
-import { TCPServer, UDPServer } from '~services/node/server';
 import { Configuration, Gateway } from '~types';
 import { Console } from '~utils/console';
 
@@ -41,7 +41,7 @@ export class GatewayRunner {
         await Promise.allSettled(instances);
     }
 
-    private createServer(config: Gateway): NodeInstance {
+    private createServer(config: Gateway): GatewayInstance {
         switch (config.protocol) {
             case ProtocolType.UDP:
                 return new UDPServer(config);
@@ -50,7 +50,7 @@ export class GatewayRunner {
         }
     }
 
-    private createClient(config: Gateway): NodeInstance {
+    private createClient(config: Gateway): GatewayInstance {
         switch (config.protocol) {
             case ProtocolType.UDP:
                 return new UDPClient(config);

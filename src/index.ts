@@ -2,7 +2,7 @@ import { program } from 'commander';
 
 import packageData from '~package';
 import { ConfigurationBuilderFactory } from '~services/config/builder-factory';
-import { GatewayRunner } from '~services/node/factory';
+import { GatewayRunner } from '~services/gateway/factory';
 import { ProgramOptions } from '~types';
 import { stringify, validate, write } from '~utils/configuration';
 import { Console } from '~utils/console';
