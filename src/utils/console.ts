@@ -1,12 +1,12 @@
 import chalk from 'chalk';
-import { program as commander } from 'commander';
+import { program } from 'commander';
 import { ZodError } from 'zod';
 
 import { ProgramOptions } from '~types';
 
 
 export abstract class Console {
-    static readonly PROGRAM_OPTIONS: ProgramOptions = commander.opts();
+    static readonly PROGRAM_OPTIONS: ProgramOptions = program.opts();
 
     static message(message: string) {
         console.log(chalk.bold(message));

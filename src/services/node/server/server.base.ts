@@ -15,7 +15,7 @@ export abstract class BaseServer extends NodeInstance {
             this.createConnection(stream);
         });
 
-        const keyPair = keychain.get(this.config);
+        const keyPair = keychain.keyFor(this.config);
         await server.listen(keyPair);
         Console.debug(`Listening for remote ${protocol} connections on port ${this.config.port}`);
     }

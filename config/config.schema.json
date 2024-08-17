@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-04/schema",
     "definitions": {
-        "node": {
+        "gateway": {
             "type": "object",
             "properties": {
                 "protocol": {
@@ -22,16 +22,16 @@
         "secret": {
             "type": "string"
         },
-        "nodes": {
+        "gateways": {
             "type": "array",
             "minItems": 1,
             "items": {
-                "$ref": "#/definitions/node"
+                "$ref": "#/definitions/gateway"
             }
         },
         "easy": {
             "type": "boolean"
         }
     },
-    "required": ["secret", "nodes"]
+    "required": ["secret", "gateways"]
 }

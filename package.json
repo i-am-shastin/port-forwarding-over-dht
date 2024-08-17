@@ -9,7 +9,7 @@
     },
     "scripts": {
         "start": "tsx src/index.ts",
-        "dev": "tsx src/index.ts --config=./config/config.server.json --server",
+        "dev": "tsx src/index.ts --debug",
         "lint": "npx eslint . || tsc --noEmit",
         "lint-fix": "npx eslint . --fix",
         "help": "tsx src/index.ts --help"

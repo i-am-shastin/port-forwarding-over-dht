@@ -3,7 +3,7 @@ export enum ProtocolType {
     UDP = 'udp'
 }
 
-export enum ProgramMode {
+export enum Mode {
     Client = 'Client',
     Server = 'Server'
 }

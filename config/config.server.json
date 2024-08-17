@@ -1,7 +1,7 @@
 {
     "$schema": "./config.schema.json",
     "secret": "WORMS_WORLD_PARTY",
-    "nodes": [
+    "gateways": [
         {
             "protocol": "tcp",
             "port": 17011

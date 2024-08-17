@@ -5,11 +5,11 @@ import { Keychain } from '~services/keychain';
 import { TCPClient, UDPClient } from '~services/node/client';
 import { NodeInstance } from '~services/node/instance';
 import { TCPServer, UDPServer } from '~services/node/server';
-import { Configuration, Node } from '~types';
+import { Configuration, Gateway } from '~types';
 import { Console } from '~utils/console';
 
 
-export class NodeFactory {
+export class GatewayRunner {
     private dht = new DHT();
     private keychain: Keychain;
 
@@ -18,61 +18,64 @@ export class NodeFactory {
     }
 
     async run() {
+        Console.debug('Awaiting DHT initialization');
         await this.dht.ready();
 
-        let nodes = this.config.nodes;
-        if (!this.config.server && this.config.easy) {
-            nodes = await this.readConfigurationFromServer();
+        let gateways = this.config.gateways;
+        if (this.config.easy) {
+            if (this.config.server) {
+                await this.createConfigurationServer();
+            } else {
+                gateways = await this.readConfigurationFromServer();
+            }
         }
 
-        const instances = nodes.map((node) => {
+        const instances = gateways.map((gateway) => {
             const instance = this.config.server
-                ? this.createServer(node)
-                : this.createClient(node);
+                ? this.createServer(gateway)
+                : this.createClient(gateway);
 
             return instance.init(this.dht, this.keychain);
         });
 
-        if (this.config.server && this.config.easy) {
-            await this.createConfigurationServer();
-        }
-
         await Promise.allSettled(instances);
     }
 
-    private createServer(node: Node): NodeInstance {
-        switch (node.protocol) {
+    private createServer(config: Gateway): NodeInstance {
+        switch (config.protocol) {
             case ProtocolType.UDP:
-                return new UDPServer(node);
+                return new UDPServer(config);
             case ProtocolType.TCP:
-                return new TCPServer(node);
+                return new TCPServer(config);
         }
     }
 
-    private createClient(node: Node): NodeInstance {
-        switch (node.protocol) {
+    private createClient(config: Gateway): NodeInstance {
+        switch (config.protocol) {
             case ProtocolType.UDP:
-                return new UDPClient(node);
+                return new UDPClient(config);
             case ProtocolType.TCP:
-                return new TCPClient(node);
+                return new TCPClient(config);
         }
     }
 
     private async createConfigurationServer() {
+        Console.debug('Starting easy configuration server');
         const server = this.dht.createServer({ reusableSocket: true }, (socket) => {
-            Console.info('New client connected, sending node configuration');
-            socket.write(JSON.stringify(this.config.nodes));
+            Console.info('New client connected, sending gateways configuration');
+            socket.write(JSON.stringify(this.config.gateways));
         });
         await server.listen(this.keychain.baseKeyPair);
     }
 
-    private async readConfigurationFromServer(): Promise<Node[]> {
+    private readConfigurationFromServer(): Promise<Gateway[]> {
+        Console.debug('Requesting configuration from server');
         return new Promise((resolve) => {
             const socket = this.dht.connect(this.keychain.baseKeyPair.publicKey, { reusableSocket: true });
             socket.on('message', (buffer: string) => {
-                Console.info('Received node configuration from server');
-                const nodes = JSON.parse(buffer) as Node[];
-                resolve(nodes);
+                Console.info('Received gateways configuration from server');
+                const gateways = JSON.parse(buffer) as Gateway[];
+                resolve(gateways);
             });
         });
     }

@@ -8,8 +8,8 @@ import { Console } from '~utils/console';
 
 
 export class UDPClient extends NodeInstance {
-    public async init(dht: DHT, keychain: Keychain) {
-        const stream = dht.connect(keychain.get(this.config).publicKey);
+    public init(dht: DHT, keychain: Keychain) {
+        const stream = dht.connect(keychain.keyFor(this.config).publicKey);
         stream.on('open', () => {
             const socket = createSocket('udp4', (buffer) => {
                 void stream.rawStream.send(buffer);

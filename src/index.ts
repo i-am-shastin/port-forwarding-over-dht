@@ -1,35 +1,44 @@
 import { program } from 'commander';
 
-import packageData from '../package.json';
-
-import { ConfigurationBuilder } from '~services/config/builder';
-import { NodeFactory } from '~services/node/factory';
+import packageData from '~package';
+import { ConfigurationBuilderFactory } from '~services/config/builder-factory';
+import { GatewayRunner } from '~services/node/factory';
 import { ProgramOptions } from '~types';
+import { stringify, validate, write } from '~utils/configuration';
 import { Console } from '~utils/console';
-import { writeConfiguration } from '~utils/file';
 
 
 program
     .name(packageData.name)
     .version(packageData.version)
     .argument('[secret]', 'secret phrase used to connect between server and client')
-    .option('-g, --generate', 'use randomly generated secret')
-    .option('-c, --config <filename>', 'use configuration from file')
-    .option('-n, --nodes <[host-]tcp|udp:number>', 'comma-separated list of [host-]protocol:port', (v) => v.split(','))
-    .option('-s, --server', 'start in server mode, otherwise client mode will be used')
+    .option('-r, --random', 'use randomly generated secret')
+    .option('-c, --config <filename>', 'read configuration from file')
+    .option('-g, --gateways <[host-]tcp|udp:number>', 'comma-separated list of [host-]protocol:port', (v) => v.split(','))
+    .option('-s, --server', 'start in server mode (otherwise client mode will be used)')
     .option('-e, --easy', 'server will send config to client so client doesn\'t need to provide anything but secret')
     .option('-o, --output <filename>', 'save resulting configuration to file')
-    .option('-d, --debug', 'more verbose output')
+    .option('-d, --debug', 'verbose output')
     .action(main)
     .parse();
 
 async function main(secret: string, options: ProgramOptions) {
     Console.debug(`Starting ${packageData.name} v${packageData.version}`);
 
-    const [config, output] = await new ConfigurationBuilder(secret, options).build();
-    if (output) {
-        await writeConfiguration(output, config);
+    const configurationBuilder = ConfigurationBuilderFactory.createBuilder(secret, options);
+    const [configuration, output] = await configurationBuilder.build();
+
+    const validateResult = validate(configuration);
+    if (!validateResult.success) {
+        Console.critical(validateResult.error);
+        process.exit(-1);
     }
 
-    await new NodeFactory(config).run();
+    const validConfiguration = validateResult.data;
+    Console.debug(`Using configuration:\n${stringify(validConfiguration)}`);
+    if (output) {
+        await write(validConfiguration, output);
+    }
+
+    await new GatewayRunner(validConfiguration).run();
 }

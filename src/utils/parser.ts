@@ -1,6 +1,6 @@
 import { ZodError } from 'zod';
 
-import { Node, NodeSchema } from '~types';
+import { Gateway, GatewaySchema } from '~types';
 import { Console } from '~utils/console';
 
 
@@ -9,10 +9,12 @@ import { Console } from '~utils/console';
  * @param host IP address (optional)
  * @param protocol TCP/UDP (case insensitive)
  * @param port number (0-65535)
+ *
+ * @see https://regexr.com/
  */
-const regex = new RegExp('(?:((?:\\d{1,3}\\.){3}\\d{1,3})-)?(tcp|udp):(\\d+)', 'i');
+const regex = /^(?:((?:\d{1,3}\.){3}\d{1,3})-)?(tcp|udp):(\d{1,5})$/i;
 
-function parseNode(input: string): Node | Zod.ZodError {
+function parseGateway(input: string): Gateway | Zod.ZodError {
     const result = regex.exec(input);
     if (!result) {
         return new ZodError([
@@ -24,7 +26,7 @@ function parseNode(input: string): Node | Zod.ZodError {
         ]);
     }
 
-    const port = NodeSchema.safeParse({
+    const port = GatewaySchema.safeParse({
         port: Number(result.at(3)),
         protocol: result.at(2)?.toLowerCase(),
         host: result.at(1)
@@ -33,18 +35,25 @@ function parseNode(input: string): Node | Zod.ZodError {
     return port.success ? port.data : port.error;
 }
 
-export function parseNodes(nodes: string[]): Node[] {
-    Console.debug(`Parsing nodes from CLI arguments: ${nodes.join(', ')}`);
-    return nodes.reduce<Node[]>((acc, node, index) => {
-        const path = `nodes[${index}]`;
-        const result = parseNode(node);
+export function parseGateways(gateways: string): Gateway[];
+export function parseGateways(gateways: string[]): Gateway[];
+export function parseGateways(gateways: string | string[]): Gateway[] {
+    Console.debug(`Parsing gateways from CLI arguments: ${gateways.toString()}`);
+
+    if (typeof gateways === 'string') {
+        gateways = gateways.split(',');
+    }
+
+    return gateways.reduce<Gateway[]>((acc, gateway, index) => {
+        const path = `gateways[${index}]`;
+        const result = parseGateway(gateway);
 
         if (result instanceof ZodError) {
             result.issues.forEach((i) => i.path.unshift(path));
             Console.error(result);
         } else {
             acc.push(result);
-            Console.debug(`${path}: ${JSON.stringify(result, null, ' ').replace(/\s+/g, ' ')}`);
+            Console.debug(`${path}: ${JSON.stringify(result)}`);
         }
 
         return acc;

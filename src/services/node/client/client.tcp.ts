@@ -9,10 +9,10 @@ import { Console } from '~utils/console';
 
 
 export class TCPClient extends NodeInstance {
-    public async init(dht: DHT, keychain: Keychain) {
+    public init(dht: DHT, keychain: Keychain) {
         const server = createServer({ allowHalfOpen: true }, (clientSocket) => {
             Console.debug(`New local TCP connection on port ${this.config.port}`);
-            const socket = dht.connect(keychain.get(this.config).publicKey, { reusableSocket: true });
+            const socket = dht.connect(keychain.keyFor(this.config).publicKey, { reusableSocket: true });
             socket.on('open', () => {
                 pipeline(clientSocket, socket, clientSocket);
             });
