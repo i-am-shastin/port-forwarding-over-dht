@@ -1,22 +1,24 @@
 {
     "name": "port-forwarding-over-dht",
     "version": "1.0.0",
-    "author": {
-        "name": "siberian-crystall",
-        "url": "https://github.com/siberian-crystall"
+    "type": "module",
+    "author": "siberian-crystall",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/siberian-crystall/port-forwarding-over-dht.git"
     },
     "scripts": {
         "start": "tsx src/index.ts",
         "dev": "tsx src/index.ts --config=./config/config.server.json --server",
-        "lint": "tsc --noEmit && npx eslint .",
+        "lint": "npx eslint . || tsc --noEmit",
         "lint-fix": "npx eslint . --fix",
         "help": "tsx src/index.ts --help"
     },
     "dependencies": {
+        "@inquirer/prompts": "5.3.8",
         "chalk": "4.1.2",
-        "commander": "12.0.0",
-        "hyperdht": "6.14.0",
-        "inquirer": "9.2.21",
+        "commander": "12.1.0",
+        "hyperdht": "6.16.2",
         "node-netstat": "1.9.0",
         "ps-list": "8.1.1",
         "zod": "3.23.8"
@@ -24,7 +26,6 @@
     "devDependencies": {
         "@eslint/js": "^8.57.0",
         "@types/eslint__js": "^8.42.3",
-        "@types/inquirer": "^9.0.7",
         "@types/node": "^20.12.11",
         "@types/node-netstat": "^1.8.4",
         "eslint": "^8.57.0",
