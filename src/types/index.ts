@@ -1,4 +1,4 @@
-import { z as zod } from 'zod';
+import zod from 'zod';
 
 import { ProtocolType } from '~enums';
 

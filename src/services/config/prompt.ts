@@ -6,8 +6,9 @@ import type { IConfigurationBuilder } from '~src/interfaces';
 import { ConfigurationBuilderResult, Gateway } from '~types';
 import { Console } from '~utils/console';
 import { generateSecret } from '~utils/crypto';
+import { gatewaysToString } from '~utils/format';
 import { getNetworkInfoByProcess } from '~utils/network';
-import { parseGateways } from '~utils/parser';
+import { parseGateways, testGateways } from '~utils/parser';
 
 
 /**
@@ -19,6 +20,14 @@ export class PromptConfigurationBuilder implements IConfigurationBuilder {
     }
 
     async build(): Promise<ConfigurationBuilderResult> {
+        try {
+            return await this.interactiveBuild();
+        } catch (e) {
+            process.exit(-2);
+        }
+    }
+
+    async interactiveBuild(): Promise<ConfigurationBuilderResult> {
         Console.debug('Requesting mode');
         const appMode = await select({
             message: 'Choose program mode:',
@@ -33,7 +42,7 @@ export class PromptConfigurationBuilder implements IConfigurationBuilder {
             message: 'Enter secret:',
             default: appMode === Mode.Server ? generateSecret() : undefined,
             validate: (value) => {
-                if (appMode === Mode.Server || value.trim().length >= 8) {
+                if (value.trim().length >= 8) {
                     return true;
                 }
                 return 'Secret must contain at least 8 characters';
@@ -62,7 +71,10 @@ export class PromptConfigurationBuilder implements IConfigurationBuilder {
 
         if (isManual) {
             Console.debug('Requesting manual input of gateways');
-            const ports = await input({ message: 'Enter gateways (comma-separated list of [host-]protocol:port):' });
+            const ports = await input({
+                message: 'Enter gateways (comma-separated list of [host-]protocol:port):',
+                validate: (value) => testGateways(value),
+            });
             return parseGateways(ports);
         }
 
@@ -72,27 +84,29 @@ export class PromptConfigurationBuilder implements IConfigurationBuilder {
         }
 
         Console.debug('Obtaining process list');
-        const processInfo = await getNetworkInfoByProcess();
-        const processNames = Object.keys(processInfo)
+        const processes = await getNetworkInfoByProcess();
+        const processNames = Object.keys(processes)
             .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
             .map((v) => ({ value: v }));
 
+        const processPorts = Object.entries(processes)
+            .reduce<Record<string, string>>((acc, [key, gateways]) => {
+                acc[key] = chalk.gray(`(${gatewaysToString(gateways)})`);
+                return acc;
+            }, {});
+
         Console.debug('Using process list to get gateways');
-        const process = await select({
+        const processName = await select({
             message: 'Select process:',
             choices: [...processNames, new Separator()],
             theme: {
                 style: {
-                    highlight: (input: string) => {
-                        const process = input.substring(2);
-                        const gateways = this.stringify(processInfo[process]);
-                        return `${chalk.cyan(input)} ${chalk.gray(`(${gateways})`)}`;
-                    }
+                    highlight: (input: string) => `${chalk.cyan(input)} ${processPorts[input.substring(2)]}`
                 }
             }
         });
 
-        return processInfo[process];
+        return processes[processName];
     }
 
     private promptEasyMode(): Promise<boolean> {
@@ -105,13 +119,5 @@ export class PromptConfigurationBuilder implements IConfigurationBuilder {
         if (await confirm({ message: 'Do you want to save configuration?' })) {
             return input({ message: 'Enter filename:' });
         }
-    }
-
-    private stringify(gateways: Gateway[]): string {
-        const protocols = gateways.reduce((acc, v) => (acc[v.protocol].push(v.port), acc), { tcp: [] as number[], udp: [] as number[] });
-        return Object.entries(protocols)
-            .filter(([, values]) => values.length)
-            .map(([key, values]) => `${chalk.white(key.toUpperCase())}: ${values.join(', ')}`)
-            .join(', ');
     }
 }

@@ -12,7 +12,7 @@ import { Console } from '~utils/console';
  *
  * @see https://regexr.com/
  */
-const regex = /^(?:((?:\d{1,3}\.){3}\d{1,3})-)?(tcp|udp):(\d{1,5})$/i;
+const regex = /^\s*(?:((?:\d{1,3}\.){3}\d{1,3})-)?(tcp|udp):(\d{1,5})\s*$/i;
 
 function parseGateway(input: string): Gateway | Zod.ZodError {
     const result = regex.exec(input);
@@ -58,4 +58,9 @@ export function parseGateways(gateways: string | string[]): Gateway[] {
 
         return acc;
     }, []);
+}
+
+export function testGateways(input: string): boolean {
+    const gateways = input.split(',');
+    return gateways.every((gateway) => regex.exec(gateway) != null);
 }
