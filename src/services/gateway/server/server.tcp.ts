@@ -1,7 +1,6 @@
+import { NoiseSecretStream } from 'hyperdht';
 import { connect } from 'net';
 import { pipeline } from 'stream';
-
-import { NoiseSecretStream } from 'hyperdht';
 
 import { BaseServer } from '~services/gateway/server/server.base';
 

@@ -1,5 +1,4 @@
 import { createSocket } from 'dgram';
-
 import DHT from 'hyperdht';
 
 import { GatewayInstance } from '~services/gateway/instance';

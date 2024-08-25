@@ -1,7 +1,6 @@
+import DHT from 'hyperdht';
 import { createServer } from 'net';
 import { pipeline } from 'stream';
-
-import DHT from 'hyperdht';
 
 import { GatewayInstance } from '~services/gateway/instance';
 import { Keychain } from '~services/keychain';

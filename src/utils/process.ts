@@ -1,5 +1,4 @@
 import { parse } from 'path';
-
 import psList from 'ps-list';
 
 

@@ -34,7 +34,7 @@ export default tseslint.config({
             'error',
             {
                 'newlines-between': 'always',
-                'groups': ['builtin', 'external', 'parent', ['internal', 'sibling', 'index', 'object', 'type']],
+                'groups': [['builtin', 'external'], 'parent', ['internal', 'sibling', 'index', 'object', 'type']],
                 'alphabetize': { 'order': 'asc', 'caseInsensitive': true },
             }
         ]
