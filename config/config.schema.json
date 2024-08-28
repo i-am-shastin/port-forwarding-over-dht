@@ -20,7 +20,8 @@
     },
     "properties": {
         "secret": {
-            "type": "string"
+            "type": "string",
+            "minLength": 8
         },
         "gateways": {
             "type": "array",
@@ -30,6 +31,9 @@
             }
         },
         "easy": {
+            "type": "boolean"
+        },
+        "server": {
             "type": "boolean"
         }
     },

@@ -15,21 +15,21 @@ export class Keychain {
      */
     constructor(private secret: string) {
         Console.debug(`Initializing keychain with secret: ${secret}`);
-        this.baseKeyPair = this.keyPair(this.secret);
+        this.baseKeyPair = this.createKeyPair(this.secret);
     }
 
     /**
-     * Gets new keypair based on secret and gateway configuration.
-     * @param gateway Gateway configuration
+     * Gets new keypair based on gateway configuration.
+     * @param gateway Gateway configuration.
      */
     keyFor(gateway: Gateway): KeyPair {
         const seed = `${gateway.host ?? 'localhost'}-${gateway.protocol}:${gateway.port}`;
         Console.debug(`Generating keypair for gateway: ${seed}`);
 
-        return this.keyPair(`${this.secret}-${seed}`);
+        return this.createKeyPair(`${this.secret}-${seed}`);
     }
 
-    private keyPair(input: string): KeyPair {
+    private createKeyPair(input: string): KeyPair {
         const hash = this.hash(input);
         return DHT.keyPair(hash);
     }

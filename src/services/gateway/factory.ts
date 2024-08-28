@@ -9,60 +9,67 @@ import { Configuration, Gateway } from '~types';
 import { Console } from '~utils/console';
 
 
-export class GatewayRunner {
+export class GatewayFactory {
     private dht = new DHT();
     private keychain: Keychain;
+    private instances!: GatewayInstance[];
+
+    get instanceCount() {
+        return this.instances.length;
+    }
 
     constructor(private config: Configuration) {
         this.keychain = new Keychain(config.secret);
     }
 
-    async run() {
+    async start() {
         Console.debug('Awaiting DHT initialization');
+        const stopSpinner = Console.spinner('Initializing...');
+
         await this.dht.ready();
+        await (this.config.server ? this.createServers() : this.createClients());
 
-        let gateways = this.config.gateways;
+        const initPromises = this.instances.map((instance) => instance.init(this.dht, this.keychain));
+        await Promise.allSettled(initPromises);
+
+        stopSpinner();
+    }
+
+    private async createServers() {
         if (this.config.easy) {
-            if (this.config.server) {
-                await this.createConfigurationServer();
-            } else {
-                gateways = await this.readConfigurationFromServer();
+            await this.createConfigurationServer();
+        }
+
+        this.instances = this.config.gateways.map((gateway) => {
+            switch (gateway.protocol) {
+                case ProtocolType.UDP:
+                    return new UDPServer(gateway);
+                case ProtocolType.TCP:
+                    return new TCPServer(gateway);
             }
-        }
-
-        const instances = gateways.map((gateway) => {
-            const instance = this.config.server
-                ? this.createServer(gateway)
-                : this.createClient(gateway);
-
-            return instance.init(this.dht, this.keychain);
         });
-
-        await Promise.allSettled(instances);
     }
 
-    private createServer(config: Gateway): GatewayInstance {
-        switch (config.protocol) {
-            case ProtocolType.UDP:
-                return new UDPServer(config);
-            case ProtocolType.TCP:
-                return new TCPServer(config);
+    private async createClients() {
+        let gateways = this.config.gateways;
+        if (!gateways.length) {
+            gateways = await this.readConfigurationFromServer();
         }
-    }
 
-    private createClient(config: Gateway): GatewayInstance {
-        switch (config.protocol) {
-            case ProtocolType.UDP:
-                return new UDPClient(config);
-            case ProtocolType.TCP:
-                return new TCPClient(config);
-        }
+        this.instances = gateways.map((gateway) => {
+            switch (gateway.protocol) {
+                case ProtocolType.UDP:
+                    return new UDPClient(gateway);
+                case ProtocolType.TCP:
+                    return new TCPClient(gateway);
+            }
+        });
     }
 
     private async createConfigurationServer() {
         Console.debug('Starting easy configuration server');
         const server = this.dht.createServer({ reusableSocket: true }, (socket) => {
-            Console.info('New client connected, sending gateways configuration');
+            Console.message('New client connected, sending gateways configuration');
             socket.write(JSON.stringify(this.config.gateways));
         });
         await server.listen(this.keychain.baseKeyPair);
@@ -73,7 +80,7 @@ export class GatewayRunner {
         return new Promise((resolve) => {
             const socket = this.dht.connect(this.keychain.baseKeyPair.publicKey, { reusableSocket: true });
             socket.on('message', (buffer: string) => {
-                Console.info('Received gateways configuration from server');
+                Console.message('Received gateways configuration from server');
                 const gateways = JSON.parse(buffer) as Gateway[];
                 resolve(gateways);
             });

@@ -2,7 +2,7 @@ import { program } from 'commander';
 
 import packageData from '~package';
 import { ConfigurationBuilderFactory } from '~services/config/builder-factory';
-import { GatewayRunner } from '~services/gateway/factory';
+import { GatewayFactory } from '~services/gateway/factory';
 import { ProgramOptions } from '~types';
 import { stringify, validate, write } from '~utils/configuration';
 import { Console } from '~utils/console';
@@ -14,7 +14,7 @@ program
     .argument('[secret]', 'secret phrase used to connect between server and client')
     .option('-r, --random', 'use randomly generated secret')
     .option('-c, --config <filename>', 'read configuration from file')
-    .option('-g, --gateways <[host-]tcp|udp:number>', 'comma-separated list of [host-]protocol:port', (v) => v.split(','))
+    .option('-g, --gateways <[ip-]tcp|udp:number>', 'comma-separated list of [host-]protocol:port', (v) => v.split(','))
     .option('-s, --server', 'start in server mode (otherwise client mode will be used)')
     .option('-e, --easy', 'server will send config to client so client doesn\'t need to provide anything but secret')
     .option('-o, --output <filename>', 'save resulting configuration to file')
@@ -40,5 +40,8 @@ async function main(secret: string, options: ProgramOptions) {
         await write(validConfiguration, output);
     }
 
-    await new GatewayRunner(validConfiguration).run();
+    const factory = new GatewayFactory(validConfiguration);
+    await factory.start();
+
+    Console.info(`${packageData.name} started. Running ${factory.instanceCount} ${validConfiguration.server ? 'server' : 'client'} gateway(s)`);
 }

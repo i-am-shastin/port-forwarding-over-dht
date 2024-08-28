@@ -28,6 +28,6 @@ export function stringify(configuration: Partial<Configuration>): string {
     return JSON.stringify(configuration, null, 4);
 }
 
-function trimConfigurationObject(obj: Configuration) {
-    return pick(obj, 'gateways', 'secret', 'easy');
+function trimConfigurationObject(object: Configuration) {
+    return pick(object, 'gateways', 'secret', 'easy');
 }

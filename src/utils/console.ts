@@ -1,12 +1,40 @@
 import chalk from 'chalk';
 import { program } from 'commander';
+import { stdout } from 'node:process';
 import { ZodError } from 'zod';
 
 import { ProgramOptions } from '~types';
 
 
 export abstract class Console {
-    static readonly PROGRAM_OPTIONS: ProgramOptions = program.opts();
+    private static readonly PROGRAM_OPTIONS: ProgramOptions = program.opts();
+
+    private static readonly spinnerFrames = ['⣷', '⣯', '⣟', '⡿', '⢿', '⣻', '⣽', '⣾'];
+    private static readonly cursorState = {
+        visible: '\r\x1B[?25h',
+        hidden: '\x1B[?25l'
+    };
+
+    /**
+     * Starts spinner animation.
+     * @param message Optional message to display aside of spinner.
+     * @returns Function to stop spinner animation.
+     * @see https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797
+     */
+    static spinner(message = '') {
+        stdout.write(this.cursorState.hidden);
+
+        let i = 0;
+        const timer = setInterval(() => {
+            stdout.write(`\r${chalk.green(this.spinnerFrames[i])} ${message}`);
+            i = ++i % this.spinnerFrames.length;
+        }, 80);
+
+        return () => {
+            clearInterval(timer);
+            stdout.write(this.cursorState.visible);
+        };
+    }
 
     static message(message: string) {
         console.log(chalk.bold(message));
@@ -22,12 +50,12 @@ export abstract class Console {
 
     @normalize
     static error(message: string | ZodError) {
-        console.log(chalk.red(message));
+        console.error(chalk.red(message));
     }
 
     @normalize
     static critical(message: string | ZodError) {
-        console.log(chalk.bold.redBright(message));
+        console.error(chalk.bold.redBright(message));
     }
 }
 

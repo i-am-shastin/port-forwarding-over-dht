@@ -15,8 +15,8 @@ export const ConfigurationSchema = zod
     .object({
         secret: zod.string().trim().min(8),
         gateways: GatewaySchema.array(),
-        server: zod.boolean(),
-        easy: zod.boolean()
+        server: zod.boolean().optional(),
+        easy: zod.boolean().optional()
     })
     .superRefine(({ server, gateways }, context) => {
         if (server && !gateways.length) {

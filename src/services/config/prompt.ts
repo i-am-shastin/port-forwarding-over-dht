@@ -23,6 +23,10 @@ export class PromptConfigurationBuilder implements IConfigurationBuilder {
         try {
             return await this.interactiveBuild();
         } catch (e) {
+            const isError = e instanceof Error;
+            if (!isError || e.name !== 'ExitPromptError') {
+                Console.critical(String(isError ? e.message : e));
+            }
             process.exit(-2);
         }
     }
@@ -49,8 +53,8 @@ export class PromptConfigurationBuilder implements IConfigurationBuilder {
             },
         });
 
-        const easy = appMode === Mode.Server ? await this.promptEasyMode() : false;
-        const output = gateways?.length ? await this.promptOutputFile() : undefined;
+        const easy = appMode === Mode.Server ? await this.promptEasyMode() : undefined;
+        const output = gateways.length ? await this.promptOutputFile() : undefined;
 
         return [
             {
@@ -117,7 +121,10 @@ export class PromptConfigurationBuilder implements IConfigurationBuilder {
     private async promptOutputFile(): Promise<string | undefined> {
         Console.debug('Requesting configuration output filename');
         if (await confirm({ message: 'Do you want to save configuration?' })) {
-            return input({ message: 'Enter filename:' });
+            return input({
+                message: 'Enter filename:',
+                default: './config.json'
+            });
         }
     }
 }

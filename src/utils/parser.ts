@@ -5,34 +5,32 @@ import { Console } from '~utils/console';
 
 
 /**
- * Regular expression that matches [host-]protocol:port
- * @param host IP address (optional)
- * @param protocol TCP/UDP (case insensitive)
- * @param port number (0-65535)
+ * Regular expression that matches ```[host-]protocol:port```.
+ * @param host IP address (optional).
+ * @param protocol TCP or UDP (string, case insensitive).
+ * @param port 1-5 digits.
  *
- * @see https://regexr.com/
+ * @see https://regexr.com/855od
  */
 const regex = /^\s*(?:((?:\d{1,3}\.){3}\d{1,3})-)?(tcp|udp):(\d{1,5})\s*$/i;
 
-function parseGateway(input: string): Gateway | Zod.ZodError {
+function parseGateway(input: string): Gateway | ZodError {
     const result = regex.exec(input);
     if (!result) {
-        return new ZodError([
-            {
-                code: 'custom',
-                message: `Input string is in non-valid format, received "${input}"`,
-                path: []
-            }
-        ]);
+        return new ZodError([{
+            code: 'custom',
+            message: `Input string is in non-valid format, received "${input}"`,
+            path: []
+        }]);
     }
 
-    const port = GatewaySchema.safeParse({
-        port: Number(result.at(3)),
-        protocol: result.at(2)?.toLowerCase(),
-        host: result.at(1)
+    const parseResult = GatewaySchema.safeParse({
+        host: result.at(1),
+        protocol: result.at(2)!.toLowerCase(),
+        port: Number(result.at(3))
     });
 
-    return port.success ? port.data : port.error;
+    return parseResult.success ? parseResult.data : parseResult.error;
 }
 
 export function parseGateways(gateways: string): Gateway[];
@@ -61,6 +59,7 @@ export function parseGateways(gateways: string | string[]): Gateway[] {
 }
 
 export function testGateways(input: string): boolean {
-    const gateways = input.split(',');
-    return gateways.every((gateway) => regex.exec(gateway) != null);
+    return input
+        .split(',')
+        .every((gateway) => regex.exec(gateway) != null);
 }
