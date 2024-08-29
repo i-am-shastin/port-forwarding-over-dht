@@ -1,11 +1,15 @@
 import { program } from 'commander';
+import DHT from 'hyperdht';
 
 import packageData from '~package';
 import { ConfigurationBuilderFactory } from '~services/config/builder-factory';
 import { GatewayFactory } from '~services/gateway/factory';
-import { ProgramOptions } from '~types';
-import { stringify, validate, write } from '~utils/configuration';
+import { GatewayResolver } from '~services/gateway/resolver';
+import { Keychain } from '~services/keychain';
+import { validate, write } from '~utils/configuration';
 import { Console } from '~utils/console';
+
+import type { ProgramOptions } from '~types';
 
 
 program
@@ -16,7 +20,7 @@ program
     .option('-c, --config <filename>', 'read configuration from file')
     .option('-g, --gateways <[ip-]tcp|udp:number>', 'comma-separated list of [host-]protocol:port', (v) => v.split(','))
     .option('-s, --server', 'start in server mode (otherwise client mode will be used)')
-    .option('-e, --easy', 'server will send config to client so client doesn\'t need to provide anything but secret')
+    .option('-e, --easy', 'use easy mode for gateway configuration exchanging')
     .option('-o, --output <filename>', 'save resulting configuration to file')
     .option('-d, --debug', 'verbose output')
     .action(main)
@@ -26,22 +30,29 @@ async function main(secret: string, options: ProgramOptions) {
     Console.debug(`Starting ${packageData.name} v${packageData.version}`);
 
     const configurationBuilder = ConfigurationBuilderFactory.createBuilder(secret, options);
-    const [configuration, output] = await configurationBuilder.build();
+    const [configurationLike, output] = await configurationBuilder.build();
 
-    const validateResult = validate(configuration);
+    const validateResult = validate(configurationLike);
     if (!validateResult.success) {
         Console.critical(validateResult.error);
         process.exit(-1);
     }
 
-    const validConfiguration = validateResult.data;
-    Console.debug(`Using configuration:\n${stringify(validConfiguration)}`);
+    const configuration = validateResult.data;
+    Console.debug(`Using configuration:\n${JSON.stringify(configuration, null, 4)}`);
     if (output) {
-        await write(validConfiguration, output);
+        await write(configuration, output);
     }
 
-    const factory = new GatewayFactory(validConfiguration);
-    await factory.start();
+    const dht = new DHT();
+    Console.debug('Awaiting DHT initialization');
+    await dht.ready();
 
-    Console.info(`${packageData.name} started. Running ${factory.instanceCount} ${validConfiguration.server ? 'server' : 'client'} gateway(s)`);
+    const keychain = new Keychain(configuration.secret);
+    const resolver = new GatewayResolver(dht, keychain.baseKeyPair, configuration);
+
+    const factory = new GatewayFactory(dht, keychain, resolver);
+    await factory.start(configuration.server);
+
+    Console.info(`${packageData.name} started. Running ${factory.instanceCount} ${configuration.server ? 'server' : 'client'} gateway(s)`);
 }
