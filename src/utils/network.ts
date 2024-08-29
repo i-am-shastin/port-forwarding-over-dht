@@ -1,8 +1,9 @@
 import netstat from 'node-netstat';
 
 import { ProtocolType } from '~enums';
-import { Gateway } from '~types';
 import { getProcesses } from '~utils/process';
+
+import type { Gateway } from '~types';
 
 
 type ProcessLocalNetworkInfo = {
@@ -17,7 +18,7 @@ function isCorrectProtocol(value: string): value is ProtocolType {
     return value === ProtocolType.TCP || value === ProtocolType.UDP;
 }
 
-export function getNetworkInfo() {
+function getNetstatResult() {
     return new Promise<ProcessLocalNetworkInfo[]>((resolve, reject) => {
         const result: ProcessLocalNetworkInfo[] = [];
         netstat(
@@ -38,16 +39,22 @@ export function getNetworkInfo() {
     });
 }
 
-export async function getNetworkInfoByProcess() {
-    const networkInfo = await getNetworkInfo();
+/**
+ * Gets processes network information.
+ * @returns Object where key is ```processName``` and value is array of gateways.
+ */
+export async function getProcessNetworkInfo() {
+    const netstatResult = await getNetstatResult();
     const processes = await getProcesses();
 
-    const mapped = networkInfo
+    const mapped = netstatResult
         .reduce<Record<string, Map<string, Gateway>>>((acc, value) => {
             const processName = processes[value.processId];
 
             if (processName) {
-                if (!acc[processName]) acc[processName] = new Map<string, Gateway>();
+                if (!acc[processName]) {
+                    acc[processName] = new Map<string, Gateway>();
+                }
 
                 const result: Gateway = {
                     port: value.port,

@@ -2,23 +2,25 @@ import { Separator, confirm, input, select } from '@inquirer/prompts';
 import chalk from 'chalk';
 
 import { Mode } from '~enums';
-import type { IConfigurationBuilder } from '~src/interfaces';
-import { ConfigurationBuilderResult, Gateway } from '~types';
 import { Console } from '~utils/console';
 import { generateSecret } from '~utils/crypto';
 import { gatewaysToString } from '~utils/format';
-import { getNetworkInfoByProcess } from '~utils/network';
-import { parseGateways, testGateways } from '~utils/parser';
+import { parseGateways, testGateways } from '~utils/gateway';
+import { getProcessNetworkInfo } from '~utils/network';
+
+import type { IConfigurationBuilder } from '~src/interfaces';
+import type { Configuration, ConfigurationBuilderResult, Gateway } from '~types';
 
 
-/**
- * Builds configuration from user input.
- */
 export class PromptConfigurationBuilder implements IConfigurationBuilder {
+    /**
+     * Builds configuration from user input.
+     */
     constructor() {
         Console.debug('Initializing prompt configuration builder');
     }
 
+    /** @inheritdoc */
     async build(): Promise<ConfigurationBuilderResult> {
         try {
             return await this.interactiveBuild();
@@ -31,20 +33,21 @@ export class PromptConfigurationBuilder implements IConfigurationBuilder {
         }
     }
 
-    async interactiveBuild(): Promise<ConfigurationBuilderResult> {
+    private async interactiveBuild(): Promise<ConfigurationBuilderResult> {
         Console.debug('Requesting mode');
         const appMode = await select({
             message: 'Choose program mode:',
             choices: Object.values(Mode).map((v) => ({ value: v })),
         });
+        const server = appMode === Mode.Server;
 
         Console.debug('Requesting gateways');
-        const gateways = await this.promptGateways(appMode);
+        const gateways = await this.promptGateways(!server);
 
         Console.debug('Requesting secret');
         const secret = await input({
             message: 'Enter secret:',
-            default: appMode === Mode.Server ? generateSecret() : undefined,
+            default: server ? generateSecret() : undefined,
             validate: (value) => {
                 if (value.trim().length >= 8) {
                     return true;
@@ -53,21 +56,19 @@ export class PromptConfigurationBuilder implements IConfigurationBuilder {
             },
         });
 
-        const easy = appMode === Mode.Server ? await this.promptEasyMode() : undefined;
+        const easy = server ? await this.promptEasyMode() : gateways.length == 0;
         const output = gateways.length ? await this.promptOutputFile() : undefined;
+        const configuration: Configuration = {
+            gateways,
+            secret,
+            easy,
+            server
+        };
 
-        return [
-            {
-                gateways,
-                secret,
-                easy,
-                server: appMode === Mode.Server
-            },
-            output
-        ];
+        return [configuration, output];
     }
 
-    private async promptGateways(programMode: Mode): Promise<Gateway[]> {
+    private async promptGateways(isClient: boolean): Promise<Gateway[]> {
         const isManual = await confirm({
             default: false,
             message: 'Do you know what protocols/ports to use?'
@@ -75,29 +76,23 @@ export class PromptConfigurationBuilder implements IConfigurationBuilder {
 
         if (isManual) {
             Console.debug('Requesting manual input of gateways');
-            const ports = await input({
-                message: 'Enter gateways (comma-separated list of [host-]protocol:port):',
+            const gateways = await input({
+                message: `Enter gateways ${chalk.gray('(comma-separated list of [host-]protocol:port)')}:`,
                 validate: (value) => testGateways(value),
             });
-            return parseGateways(ports);
+            return parseGateways(gateways);
         }
 
-        if (programMode === Mode.Client) {
+        if (isClient) {
             Console.info('In this case, server must be running in easy mode');
             return [];
         }
 
         Console.debug('Obtaining process list');
-        const processes = await getNetworkInfoByProcess();
+        const processes = await getProcessNetworkInfo();
         const processNames = Object.keys(processes)
             .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
             .map((v) => ({ value: v }));
-
-        const processPorts = Object.entries(processes)
-            .reduce<Record<string, string>>((acc, [key, gateways]) => {
-                acc[key] = chalk.gray(`(${gatewaysToString(gateways)})`);
-                return acc;
-            }, {});
 
         Console.debug('Using process list to get gateways');
         const processName = await select({
@@ -105,7 +100,11 @@ export class PromptConfigurationBuilder implements IConfigurationBuilder {
             choices: [...processNames, new Separator()],
             theme: {
                 style: {
-                    highlight: (input: string) => `${chalk.cyan(input)} ${processPorts[input.substring(2)]}`
+                    highlight: (input: string) => {
+                        const process = input.substring(2);
+                        const gateways = gatewaysToString(processes[process]);
+                        return `${chalk.cyan(input)} ${chalk.gray(`(${gateways})`)}`;
+                    }
                 }
             }
         });
