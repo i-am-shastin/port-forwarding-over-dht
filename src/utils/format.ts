@@ -1,9 +1,13 @@
 import chalk from 'chalk';
 
 import { ProtocolType } from '~enums';
+
 import type { Gateway } from '~types';
 
 
+/**
+ * Converts array of gateways to human-readable string.
+ */
 export function gatewaysToString(gateways: Gateway[]): string {
     const result = {
         [ProtocolType.TCP]: new Set<number>(),

@@ -1,9 +1,10 @@
+/* eslint-disable jsdoc/require-jsdoc */
 import chalk from 'chalk';
 import { program } from 'commander';
 import { stdout } from 'node:process';
 import { ZodError } from 'zod';
 
-import { ProgramOptions } from '~types';
+import type { ProgramOptions } from '~types';
 
 
 export abstract class Console {

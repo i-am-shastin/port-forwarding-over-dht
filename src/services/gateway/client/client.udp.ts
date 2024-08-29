@@ -1,12 +1,14 @@
 import { createSocket } from 'dgram';
-import DHT from 'hyperdht';
 
 import { GatewayInstance } from '~services/gateway/instance';
-import { Keychain } from '~services/keychain';
 import { Console } from '~utils/console';
+
+import type DHT from 'hyperdht';
+import type { Keychain } from '~services/keychain';
 
 
 export class UDPClient extends GatewayInstance {
+    /** @inheritdoc */
     public init(dht: DHT, keychain: Keychain) {
         const stream = dht.connect(keychain.keyFor(this.config).publicKey);
         stream.on('open', () => {

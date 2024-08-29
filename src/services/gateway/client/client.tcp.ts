@@ -1,13 +1,15 @@
-import DHT from 'hyperdht';
 import { createServer } from 'net';
 import { pipeline } from 'stream';
 
 import { GatewayInstance } from '~services/gateway/instance';
-import { Keychain } from '~services/keychain';
 import { Console } from '~utils/console';
+
+import type DHT from 'hyperdht';
+import type { Keychain } from '~services/keychain';
 
 
 export class TCPClient extends GatewayInstance {
+    /** @inheritdoc */
     public init(dht: DHT, keychain: Keychain) {
         const server = createServer({ allowHalfOpen: true }, (clientSocket) => {
             Console.debug(`New local TCP connection on port ${this.config.port}`);

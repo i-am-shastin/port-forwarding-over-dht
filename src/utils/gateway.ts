@@ -1,7 +1,9 @@
 import { ZodError } from 'zod';
 
-import { Gateway, GatewaySchema } from '~types';
+import { GatewaySchema } from '~types';
 import { Console } from '~utils/console';
+
+import type { Gateway } from '~types';
 
 
 /**
@@ -33,8 +35,19 @@ function parseGateway(input: string): Gateway | ZodError {
     return parseResult.success ? parseResult.data : parseResult.error;
 }
 
+/**
+ * Converts string to array of gateway configurations.
+ * @param gateways Comma-separated list of gateways.
+ */
 export function parseGateways(gateways: string): Gateway[];
+/**
+ * Converts array of strings to gateway configurations.
+ * @param gateways Array of gateway-like strings.
+ */
 export function parseGateways(gateways: string[]): Gateway[];
+/**
+ * Converts input value to array of gateway configurations.
+ */
 export function parseGateways(gateways: string | string[]): Gateway[] {
     Console.debug(`Parsing gateways from CLI arguments: ${gateways.toString()}`);
 
@@ -58,8 +71,12 @@ export function parseGateways(gateways: string | string[]): Gateway[] {
     }, []);
 }
 
-export function testGateways(input: string): boolean {
-    return input
+/**
+ * Checks if string looks like comma-separated list of gateways.
+ * @param value Input string.
+ */
+export function testGateways(value: string): boolean {
+    return value
         .split(',')
         .every((gateway) => regex.exec(gateway) != null);
 }

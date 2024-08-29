@@ -1,16 +1,15 @@
-import type { IConfigurationBuilder } from '~src/interfaces';
-import { Configuration, ConfigurationBuilderResult, ProgramOptions } from '~types';
 import { read } from '~utils/configuration';
 import { Console } from '~utils/console';
 import { generateSecret } from '~utils/crypto';
-import { parseGateways } from '~utils/parser';
+import { parseGateways } from '~utils/gateway';
+
+import type { IConfigurationBuilder } from '~src/interfaces';
+import type { Configuration, ConfigurationBuilderResult, ProgramOptions } from '~types';
 
 
-/**
- * Builds configuration from command-line arguments.
- */
 export class ConfigurationBuilder implements IConfigurationBuilder {
     /**
+     * Builds configuration from command-line arguments.
      * @param secret Secret phrase provided as an CLI argument.
      * @param options CLI options.
      */
@@ -18,6 +17,7 @@ export class ConfigurationBuilder implements IConfigurationBuilder {
         Console.debug('Initializing configuration builder');
     }
 
+    /** @inheritdoc */
     async build(): Promise<ConfigurationBuilderResult> {
         Console.debug('Parsing CLI arguments to configuration');
         const configuration: Configuration = {

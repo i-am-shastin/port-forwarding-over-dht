@@ -38,13 +38,42 @@ declare module 'hyperdht' {
     }
 
     export default class DHT {
+        /**
+         * Creates new DHT node.
+         */
         constructor(options: Partial<DHTNodeOptions> = {});
 
+        /**
+         * Returns promise that resolves after DHT node initialization.
+         */
         ready(): Promise<void>;
+
+        /**
+         * Creates a new server for accepting incoming encrypted P2P connections.
+         */
         createServer(options: Partial<DHTServerOptions>, onconnection: (stream: NoiseSecretStream) => void): DHTServer;
+
+        /**
+         * Connects to a remote server.
+         */
         connect(remotePublicKey: Key, options?: DHTConnectionOptions): NoiseSecretStream;
 
+        /**
+         * Generates the required key pair for DHT operations.
+         */
         static keyPair(seed: Key): KeyPair;
+
+        /**
+         * Generates the key for key pairs.
+         */
         static hash(seed: Buffer): Key;
     }
+}
+
+
+declare module 'eslint-plugin-import' {
+    import type { ESLint } from 'eslint';
+
+
+    export default plugin as ESLint.Plugin;
 }

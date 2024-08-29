@@ -1,13 +1,15 @@
-import DHT, { NoiseSecretStream } from 'hyperdht';
-
 import { GatewayInstance } from '~services/gateway/instance';
-import { Keychain } from '~services/keychain';
 import { Console } from '~utils/console';
+
+import type DHT from 'hyperdht';
+import type { NoiseSecretStream } from 'hyperdht';
+import type { Keychain } from '~services/keychain';
 
 
 export abstract class BaseServer extends GatewayInstance {
     protected abstract reusableSocket: boolean;
 
+    /** @inheritdoc */
     public async init(dht: DHT, keychain: Keychain) {
         const protocol = this.config.protocol.toString().toUpperCase();
         const server = dht.createServer({ reusableSocket: this.reusableSocket }, (stream) => {
