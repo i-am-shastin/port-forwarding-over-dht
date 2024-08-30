@@ -37,6 +37,10 @@ declare module 'hyperdht' {
         rawStream: UDXStream;
     }
 
+    interface DHTError extends Error {
+        code: 'ETIMEDOUT' | 'ERS';
+    }
+
     export default class DHT {
         /**
          * Creates new DHT node.

@@ -31,18 +31,15 @@ export class GatewayFactory {
      * @param isServer Whether to start server or client gateways. Defaults to ```false```.
      */
     async start(isServer = false) {
-        const stopSpinner = Console.spinner('Initializing...');
-
         try {
             const gateways = await this.resolver.resolve();
             this.instances = gateways.map(isServer ? this.createServer : this.createClient);
 
             const initPromises = this.instances.map((instance) => instance.init(this.dht, this.keychain));
             await Promise.allSettled(initPromises);
-            stopSpinner();
-        } catch (e) {
-            stopSpinner();
-            Console.error(String(e));
+        } catch (error) {
+            Console.critical(String(error));
+            process.exit(-3);
         }
     }
 

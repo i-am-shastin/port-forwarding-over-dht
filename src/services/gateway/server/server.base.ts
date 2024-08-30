@@ -2,7 +2,7 @@ import { GatewayInstance } from '~services/gateway/instance';
 import { Console } from '~utils/console';
 
 import type DHT from 'hyperdht';
-import type { NoiseSecretStream } from 'hyperdht';
+import type { DHTError, NoiseSecretStream } from 'hyperdht';
 import type { Keychain } from '~services/keychain';
 
 
@@ -15,6 +15,14 @@ export abstract class BaseServer extends GatewayInstance {
         const server = dht.createServer({ reusableSocket: this.reusableSocket }, (stream) => {
             Console.info(`New remote ${protocol} connection on port ${this.config.port}`);
             this.createConnection(stream);
+            stream.on('error', (e: DHTError) => {
+                if (e.code !== 'ETIMEDOUT') {
+                    Console.critical(String(e));
+                } else {
+                    Console.debug(String(e));
+                }
+                stream.end();
+            });
         });
 
         const keyPair = keychain.keyFor(this.config);
