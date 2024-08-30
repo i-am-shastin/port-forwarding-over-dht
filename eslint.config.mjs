@@ -21,6 +21,14 @@ export default tseslint.config({
     ],
     rules: {
         '@typescript-eslint/consistent-type-imports': 'error',
+        '@typescript-eslint/no-unused-vars': [
+            'error',
+            {
+                'argsIgnorePattern': '^_',
+                'varsIgnorePattern': '^_',
+                'caughtErrorsIgnorePattern': '^_'
+            }
+        ],
         'array-bracket-spacing': ['error', 'never'],
         'arrow-parens': ['error', 'always'],
         'eol-last': ['error', 'always'],
