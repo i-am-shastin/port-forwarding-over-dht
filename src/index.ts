@@ -44,6 +44,8 @@ async function main(secret: string, options: ProgramOptions) {
         await write(configuration, output);
     }
 
+    const stopSpinner = Console.spinner('Initializing...');
+
     const dht = new DHT();
     Console.debug('Awaiting DHT initialization');
     await dht.ready();
@@ -54,5 +56,6 @@ async function main(secret: string, options: ProgramOptions) {
     const factory = new GatewayFactory(dht, keychain, resolver);
     await factory.start(configuration.server);
 
+    stopSpinner();
     Console.info(`${packageData.name} started. Running ${factory.instanceCount} ${configuration.server ? 'server' : 'client'} gateway(s)`);
 }
