@@ -6,7 +6,7 @@
             "properties": {
                 "protocol": {
                     "type": "string",
-                    "enum": ["tcp", "udp"]
+                    "enum": ["TCP", "UDP"]
                 },
                 "port": {
                     "type": "integer"

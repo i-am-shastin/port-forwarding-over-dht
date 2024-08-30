@@ -33,9 +33,9 @@ export class GatewayFactory {
     async start(isServer = false) {
         try {
             const gateways = await this.resolver.resolve();
-            this.instances = gateways.map(isServer ? this.createServer : this.createClient);
+            this.instances = gateways.map<GatewayInstance>(isServer ? this.createServer : this.createClient);
 
-            const initPromises = this.instances.map((instance) => instance.init(this.dht, this.keychain));
+            const initPromises = this.instances.map((instance) => instance.init(this.dht, this.keychain.keyFor(instance.config)));
             await Promise.allSettled(initPromises);
         } catch (error) {
             Console.critical(String(error));

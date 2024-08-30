@@ -1,29 +1,18 @@
 import { createServer } from 'net';
 import { pipeline } from 'stream';
 
-import { GatewayInstance } from '~services/gateway/instance';
-import { Console } from '~utils/console';
+import { BaseClient } from '~services/gateway/client/client.base';
 
-import type DHT from 'hyperdht';
-import type { Keychain } from '~services/keychain';
+import type { NoiseSecretStream } from 'hyperdht';
 
 
-export class TCPClient extends GatewayInstance {
-    /** @inheritdoc */
-    public init(dht: DHT, keychain: Keychain) {
-        return new Promise<void>((resolve) => {
-            const server = createServer({ allowHalfOpen: true }, (clientSocket) => {
-                Console.debug(`New local TCP connection on port ${this.config.port}`);
-                const stream = dht.connect(keychain.keyFor(this.config).publicKey, { reusableSocket: true });
-                stream.once('open', () => {
-                    pipeline(clientSocket, stream, clientSocket);
-                });
-            });
-
-            server.listen({ port: this.config.port, host: this.config.host }, () => {
-                Console.debug(`Listening for local TCP connections on port ${this.config.port}`);
-                resolve();
-            });
+export class TCPClient extends BaseClient {
+    protected createConnection(stream: NoiseSecretStream): void {
+        const server = createServer({ allowHalfOpen: true }, (clientSocket) => {
+            this.onConnect();
+            pipeline(clientSocket, stream, clientSocket);
         });
+
+        server.listen({ port: this.config.port, host: this.config.host }, () => this.onListen());
     }
 }

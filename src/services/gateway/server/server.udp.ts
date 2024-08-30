@@ -6,7 +6,7 @@ import type { NoiseSecretStream } from 'hyperdht';
 
 
 export class UDPServer extends BaseServer {
-    reusableSocket = false;
+    protected reusableSocket = false;
 
     protected createConnection(stream: NoiseSecretStream): void {
         const socket = createSocket('udp4', (buffer) => {

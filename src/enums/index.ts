@@ -1,6 +1,6 @@
 export enum ProtocolType {
-    TCP = 'tcp',
-    UDP = 'udp'
+    TCP = 'TCP',
+    UDP = 'UDP'
 }
 
 export enum Mode {

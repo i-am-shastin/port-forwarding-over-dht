@@ -3,15 +3,15 @@
     "secret": "WORMS_WORLD_PARTY",
     "gateways": [
         {
-            "protocol": "tcp",
+            "protocol": "TCP",
             "port": 17011
         },
         {
-            "protocol": "udp",
+            "protocol": "UDP",
             "port": 17010
         },
         {
-            "protocol": "udp",
+            "protocol": "UDP",
             "port": 17012
         }
     ]

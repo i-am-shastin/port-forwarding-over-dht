@@ -7,8 +7,6 @@ import type { NoiseSecretStream } from 'hyperdht';
 
 
 export class TCPServer extends BaseServer {
-    reusableSocket = true;
-
     protected createConnection(stream: NoiseSecretStream): void {
         const socket = connect({
             port: this.config.port,

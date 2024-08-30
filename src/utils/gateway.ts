@@ -28,7 +28,7 @@ function parseGateway(input: string): Gateway | ZodError {
 
     const parseResult = GatewaySchema.safeParse({
         host: result.at(1),
-        protocol: result.at(2)!.toLowerCase(),
+        protocol: result.at(2)!.toUpperCase(),
         port: Number(result.at(3))
     });
 

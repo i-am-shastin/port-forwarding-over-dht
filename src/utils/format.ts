@@ -20,7 +20,7 @@ export function gatewaysToString(gateways: Gateway[]): string {
 
     return Object.entries(result)
         .filter(([, values]) => values.size)
-        .map(([type, ports]) => `${chalk.white(type.toUpperCase())}: ${portsToIntervals(ports)}`)
+        .map(([type, ports]) => `${chalk.white(type)}: ${portsToIntervals(ports)}`)
         .join(', ');
 }
 
