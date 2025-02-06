@@ -56,7 +56,7 @@ export class PromptConfigurationBuilder implements IConfigurationBuilder {
             },
         });
 
-        const easy = server ? await this.promptEasyMode() : gateways.length == 0;
+        const easy = server ? await this.promptEasyMode() : gateways.length === 0;
         const output = gateways.length ? await this.promptOutputFile() : undefined;
         const configuration: Configuration = {
             gateways,

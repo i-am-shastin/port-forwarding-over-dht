@@ -28,7 +28,7 @@ function parseGateway(input: string): Gateway | ZodError {
 
     const parseResult = GatewaySchema.safeParse({
         host: result.at(1),
-        protocol: result.at(2)!.toUpperCase(),
+        protocol: result.at(2)?.toUpperCase(),
         port: Number(result.at(3))
     });
 
@@ -50,12 +50,9 @@ export function parseGateways(gateways: string[]): Gateway[];
  */
 export function parseGateways(gateways: string | string[]): Gateway[] {
     Console.debug(`Parsing gateways from CLI arguments: ${gateways.toString()}`);
+    const gatewayArray = typeof gateways === 'string' ? gateways.split(',') : gateways;
 
-    if (typeof gateways === 'string') {
-        gateways = gateways.split(',');
-    }
-
-    return gateways.reduce<Gateway[]>((acc, gateway, index) => {
+    return gatewayArray.reduce<Gateway[]>((acc, gateway, index) => {
         const path = `gateways[${index}]`;
         const result = parseGateway(gateway);
 

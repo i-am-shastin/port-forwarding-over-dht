@@ -24,7 +24,7 @@ export class Keychain {
      */
     keyFor(gateway: Gateway): KeyPair {
         const seed = `${gateway.host ?? 'localhost'}-${gateway.protocol}:${gateway.port}`;
-        Console.debug(`Generating keypair for gateway: ${seed}`);
+        Console.debug(`Generating keypair for gateway: ${seed.toLowerCase()}`);
 
         return this.createKeyPair(`${this.secret}-${seed}`);
     }

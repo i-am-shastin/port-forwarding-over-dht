@@ -26,11 +26,12 @@ function getNetstatResult() {
                 done: (e) => e ? reject() : resolve(result)
             },
             (data) => {
-                if (!isCorrectProtocol(data.protocol) || data.local.port == null || (data.state && !data.state.startsWith('LISTEN'))) return;
+                const protocol = data.protocol.toUpperCase();
+                if (!isCorrectProtocol(protocol) || data.local.port == null || (data.state && !data.state.startsWith('LISTEN'))) return;
 
                 result.push({
+                    protocol,
                     processId: data.pid,
-                    protocol: data.protocol,
                     port: data.local.port,
                     address: data.local.address ?? undefined
                 });

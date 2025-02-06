@@ -24,7 +24,7 @@ export class GatewayResolver {
             Console.debug('Starting easy configuration server');
             await this.createConfigurationServer();
         }
-        if (!this.config.server && this.config.gateways.length == 0) {
+        if (!this.config.server && this.config.gateways.length === 0) {
             Console.debug('Starting easy configuration client');
             return this.readConfigurationFromServer();
         }

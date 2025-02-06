@@ -1,4 +1,4 @@
-import { parse } from 'path';
+import { parse } from 'node:path';
 import psList from 'ps-list';
 
 

@@ -1,5 +1,5 @@
-import { createServer } from 'net';
-import { pipeline } from 'stream';
+import { createServer } from 'node:net';
+import { pipeline } from 'node:stream';
 
 import { BaseClient } from '~services/gateway/client/client.base';
 

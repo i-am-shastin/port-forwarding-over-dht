@@ -1,4 +1,4 @@
-import { createSocket } from 'dgram';
+import { createSocket } from 'node:dgram';
 
 import { BaseClient } from '~services/gateway/client/client.base';
 
@@ -9,11 +9,11 @@ export class UDPClient extends BaseClient {
     protected reusableSocket = false;
 
     protected createConnection(stream: NoiseSecretStream): void {
-        const socket = createSocket('udp4', (buffer) => {
+        const socket = createSocket({ type: 'udp4', reuseAddr: true }, (buffer) => {
             void stream.rawStream.send(buffer);
         });
         stream.rawStream.on('message', (buffer: Buffer) => {
-            socket.send(buffer);
+            socket.send(buffer, this.config.port, this.config.host);
         });
 
         socket
