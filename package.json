@@ -2,10 +2,10 @@
     "name": "port-forwarding-over-dht",
     "version": "1.0.0",
     "type": "module",
-    "author": "siberian-crystall",
+    "author": "i-am-shastin",
     "repository": {
         "type": "git",
-        "url": "https://github.com/siberian-crystall/port-forwarding-over-dht.git"
+        "url": "https://github.com/i-am-shastin/port-forwarding-over-dht.git"
     },
     "scripts": {
         "start": "tsx src/index.ts",
